@@ -25,7 +25,7 @@ async function getUser(req, res){
         return res.status(200).json({data: user});
 
     }catch (err) {
-       handleErrors(res, err);handleErrors(res, err);
+       handleErrors(res, err);
     }
 
 
@@ -51,7 +51,7 @@ async function login(req, res) {
         });
 
     } catch (err) {
-handleErrors(res, err);handleErrors(res, err);
+handleErrors(res, err);
     }
 
        
