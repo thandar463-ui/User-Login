@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { v4 : uuidv4 } = require("uuid");
 const { GetUserApiResponseItemDto } = require("../dtos/get-user-api.dto");
 const ApiError = require("../authcontroller/api-error");
+const { signJWT } = require("./jwt");
 const db = DB.create();
 async function register(input) {
     const pool = db.pool();
@@ -49,45 +50,45 @@ async function register(input) {
     );
 }
 async function login(input) {
+  const pool = db.pool();
 
-    const pool = db.pool();
+  const findByEmailResult = await pool.query({
+    name: "check-email-duplicate",
+    text: "SELECT * FROM users WHERE email = $1",
+    values: [input.email],
+  });
+  if (findByEmailResult.rows.length < 1) {
+    throw new ApiError("User not found", 400);
+  }
+  const foundUser = findByEmailResult.rows[0];
 
-    const findUserResult =
-        await pool.query({
-            name: "find-user-by-email",
-             text: "SELECT * FROM users WHERE email = $1",
-            values: [input.email],
-        });
+  const isSame = await bcrypt.compare(input.password, foundUser.password);
+  if (!isSame) {
+    throw new ApiError("Password not match", 400);
+  }
 
-    const existingUser =
-        findUserResult.rows[0];
-
-    if (!existingUser) {
-        throw new ApiError(
-            "Invalid email or password",
-            400
-        );
-    }
-
-    const isCorrect =
-        await bcrypt.compare(
-            input.password,
-            existingUser.password
-        );
-
-    if (!isCorrect) {
-        throw new ApiError(
-            "Invalid email or password",
-            400
-        );
-    }
-
-    return {
-        id: existingUser.id,
-        name: existingUser.name,
-        email: existingUser.email,
-        password: existingUser.password,
-    };
+  const token = signJWT({ id: foundUser.id });
+  return token;
 }
 
-module.exports = { register,getUser,login };
+async function getMe(userId) {
+
+  const pool = db.pool();
+
+  const queryResult =
+    await pool.query({
+      name: "find-user-by-id-service",
+      text:
+        "SELECT id, name, created_at FROM users WHERE id = $1",
+      values: [userId],
+    });
+
+  if (queryResult.rows.length === 0) {
+    throw new ApiError("User not found", 400);
+  }
+
+  return queryResult.rows[0];
+}
+
+
+module.exports = { register,getUser,login ,getMe};

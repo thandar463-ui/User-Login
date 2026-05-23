@@ -30,30 +30,77 @@ async function getUser(req, res){
 
 
 }
-async function login(req, res) {
+// async function login(req, res) {
 
-    try {
+//     try {
 
-        const body = req.body;
+//         const body = req.body;
 
-        // validation
-        const input =
-            LoginDto.parse(body);
+//         // validation
+//         const input =
+//             LoginDto.parse(body);
 
-        const user =
-            await authService.login(
-                input
-            );
+//         const user =
+//             await authService.login(
+//                 input
+//             );
 
-        return res.status(200).json({
-            message: "Login success",
-            data: user,
-        });
+//         return res.status(200).json({
+//             message: "Login success",
+//             data: user,
+//         });
 
-    } catch (err) {
-handleErrors(res, err);
-    }
+//     } catch (err) {
+// handleErrors(res, err);
+//     }
 
        
+// }
+
+async function login(req, res) {
+  try {
+    const body = req.body;
+
+    const input = LoginDto.parse(body);
+
+    const token = await authService.login(input);
+
+    return res.json({ data: token, message: "Logined successfully!" });
+  } catch (err) {
+    handleErrors(res, err);
+  }
 }
-module.exports = {register, getUser,login};
+
+async function getMe(req, res) {
+
+  try {
+
+    console.log(
+      "Retrieved userId from middleware:",
+      req.userId
+    );
+
+    const user =
+      await authService.getMe(
+        req.userId
+      );
+
+    return res.status(200).json({
+      message:
+        "Get user successfully",
+
+      data: {
+        id: user.id,
+        name: user.name,
+        createdAt:
+          user.created_at,
+      },
+    });
+
+  } catch (err) {
+
+    handleErrors(res, err);
+  }
+}
+
+module.exports = {register, getUser,login,getMe};
