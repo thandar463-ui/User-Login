@@ -103,4 +103,16 @@ async function deleteUser(userId){
   return queryResult.rows[0];
 }
 
-module.exports = { register,getUser,login ,getMe,deleteUser};
+async function updateUser(userId,input){
+  const pool = db.pool();
+  const queryResult = await pool.query({
+    name: "update-user-name-by-id",
+    text: "UPDATE users SET name = $1 WHERE id = $2 RETURNING *",
+    values: [input.name,userId],
+  });
+  if (queryResult.rows.length === 0) {
+    throw new ApiError("User not found", 404);
+  }
+  return queryResult.rows[0];
+}
+module.exports = { register,getUser,login ,getMe,deleteUser,updateUser};
