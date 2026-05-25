@@ -102,5 +102,13 @@ async function getMe(req, res) {
     handleErrors(res, err);
   }
 }
+async function deleteUser (req,res) {
+  try {
+    const deletedUser = await authService.deleteUser(req.userId);
+    return res.status(200).json({message: "User deleted successfully", data: {id: deletedUser.id, isDeleted: deletedUser.is_deleted,},});
+  }catch (err) {
+    handleErrors(res,err);
+  }
+}
 
-module.exports = {register, getUser,login,getMe};
+module.exports = {register, getUser,login,getMe,deleteUser};

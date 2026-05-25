@@ -90,5 +90,17 @@ async function getMe(userId) {
   return queryResult.rows[0];
 }
 
+async function deleteUser(userId){
+  const pool = db.pool();
+  const queryResult = await pool.query({
+    name: "soft-delete-user",
+    text: "UPDATE users SET is_deleted = true WHERE id = $1 RETURNING *",
+    values: [userId],
+  });
+  if (queryResult.rows.length === 0) {
+    throw new ApiError("User not found", 404);
+  }
+  return queryResult.rows[0];
+}
 
-module.exports = { register,getUser,login ,getMe};
+module.exports = { register,getUser,login ,getMe,deleteUser};
