@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const todoController = require("./authcontroller/todo.controller");
 const authController = require("./authcontroller/auth.controller");
 const userController = require("./authcontroller/user.controller");
 const { router: authRoute } = require("./authcontroller/auth.route");
@@ -19,7 +20,7 @@ db.connect({
     host: "localhost",
     user: "postgres",
     password: "pwd",
-    database: "user_db",
+    database: "todo_db",
     port: 5432,
 });
 
@@ -29,10 +30,14 @@ app.listen(PORT, () =>{
    console.log(`✅ TODO server running at http://localhost:${PORT}`);
 
 });
-
+app.get("/todos", authMiddleware, todoController.getTodos);
+app.post("/todos", authMiddleware, todoController.createTodo);
 app.get("/auth/register", authController.getUser);
 app.post("/auth/register", authController.register);
 app.post("/auth/login", authController.login);
+app.post("/send-otp", authMiddleware, userController.sendOtp);
+app.post("/change-email", authMiddleware, userController.updateEmail);
+app.post("/verify-email", userController.verifyEmail);
 app.use("/auth", authRoute);
 
 

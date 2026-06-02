@@ -1,7 +1,9 @@
 const RegisterDto = require("../dtos/register-api.dto");
 const LoginDto = require("../dtos/login.dto");
 const authService = require("../model/auth.service");
+const userService = require("../model/user.service");
 const { handleErrors } = require("./handle-errors");
+const { sendMail } = require("../model/mail.service");
 
 async function register(req, res) {
   try {
@@ -10,11 +12,17 @@ async function register(req, res) {
     const input = RegisterDto.parse(body);
 
     const createdUser = await authService.register(input);
+    const otp = await userService.createOtp(createdUser.email, createdUser.id);
+    await sendMail({email: createdUser.email, 
+      code: otp.code,
+    });
 
     return res.status(201).json({
-      data: { id: createdUser.id },
-      message: "User created successfully",
+      dataid: { id: createdUser.id },
+     
+      message: "Account created . Please verify email.",
     });
+    
   } catch (err) {
     handleErrors(res, err);
   }
@@ -97,7 +105,7 @@ async function getMe(req, res) {
       },
     });
 
-  } catch (err) {
+ } catch (err) {
 
     handleErrors(res, err);
   }

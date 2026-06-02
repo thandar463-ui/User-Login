@@ -29,10 +29,13 @@ async function register(input) {
     );
     await pool.query({
         name: "create-user",
-        text: "INSERT INTO users VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        values: [user.id, user.name, user.email, user.password, user.createdAt],
+        text: "INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING *",
+        values: [user.id, user.name, user.email, user.password, false, user.createdAt, "pending",],
     });
     return user;
+
+    const token = signJWT({ id: foundUser.id });
+  return token;
 }
     async function getUser() {
     const pool = db.pool();
@@ -61,6 +64,9 @@ async function login(input) {
     throw new ApiError("User not found", 400);
   }
   const foundUser = findByEmailResult.rows[0];
+  if (foundUser.status !== "active") {
+    throw new ApiError("Please verify your email first!", 400);
+  }
 
   const isSame = await bcrypt.compare(input.password, foundUser.password);
   if (!isSame) {

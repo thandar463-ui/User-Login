@@ -9,4 +9,7 @@ router.post("/login", authController.login);
 router.get("/me", authMiddleware, authController.getMe);
 router.delete("/users", authMiddleware, userController.deleteUser);
 router.patch("/users", authMiddleware, userController.updateUser);
+router.post("/send-otp", authMiddleware, userController.sendOtp);
+router.post("/change-email", authMiddleware, userController.updateEmail);
+router.post("/verify-email", userController.verifyEmail);
 module.exports = { router };

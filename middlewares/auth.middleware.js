@@ -36,8 +36,12 @@ async function authMiddleware(req, res, next) {
       throw new ApiError("Invalid jwt token", 401);
     }
 
-    req.userId=payload.id;
-    console.log("Middleware uerid :",req.userId);
+    // req.userId=payload.id;
+    // console.log("Middleware uerid :",req.userId);
+
+    const user = findUserByIdResult.rows[0];
+
+    req.user = user;
 
     next();
   } catch (err) {
