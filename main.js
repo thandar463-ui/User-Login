@@ -14,24 +14,26 @@ const PORT = process.env.PORT;
 if (PORT === undefined) {
   throw new Error("PORT is not provided");
 }
-const app =express();
+const app = express();
 const db = DB.create();
 db.connect({
-    host: "localhost",
-    user: "postgres",
-    password: "pwd",
-    database: "todo_db",
-    port: 5432,
+  host: "localhost",
+  user: "postgres",
+  password: "pwd",
+  database: "todo_db",
+  port: 5432,
 });
 
 app.use(express.json());
 
-app.listen(PORT, () =>{
-   console.log(`✅ TODO server running at http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`✅ TODO server running at http://localhost:${PORT}`);
 
 });
 app.get("/todos", authMiddleware, todoController.getTodos);
 app.post("/todos", authMiddleware, todoController.createTodo);
+app.put("/todos/:id", authMiddleware, todoController.updateTodo);
+app.delete("/todos/:id", authMiddleware, todoController.deleteTodo);
 app.get("/auth/register", authController.getUser);
 app.post("/auth/register", authController.register);
 app.post("/auth/login", authController.login);

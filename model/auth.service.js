@@ -1,57 +1,59 @@
-const { DB } =require("./database");
+const { DB } = require("./database");
 const UserModel = require("./user.model");
 const bcrypt = require("bcrypt");
-const { v4 : uuidv4 } = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 const { GetUserApiResponseItemDto } = require("../dtos/get-user-api.dto");
 const ApiError = require("../authcontroller/api-error");
 const { signJWT } = require("./jwt");
 const db = DB.create();
-async function register(input) {
-    const pool = db.pool();
-    const findByEmailResult = await pool.query({
-        name: "check-email-duplicate",
-        text: "SELECT * FROM users WHERE email = $1",
-        values: [input.email],
-    });
-    if (findByEmailResult.rows.length > 0){
-        throw new ApiError("Duplicate email", 400);
-    }
-    const hashedPassword = await bcrypt.hash(
-        input.password,
-        await bcrypt.genSalt(10),
-    );
-    const user = new UserModel(
-        uuidv4(),
-        input.name,
-        input.email,
-        hashedPassword,
-        new Date(),
-    );
-    await pool.query({
-        name: "create-user",
-        text: "INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING *",
-        values: [user.id, user.name, user.email, user.password, false, user.createdAt, "pending",],
-    });
-    return user;
 
-    const token = signJWT({ id: foundUser.id });
-  return token;
+async function register(input) {
+  const pool = db.pool();
+  const findByEmailResult = await pool.query({
+    name: "check-email-duplicate",
+    text: "SELECT * FROM users WHERE email = $1",
+    values: [input.email],
+  });
+  if (findByEmailResult.rows.length > 0) {
+    throw new ApiError("Duplicate email", 400);
+  }
+  const hashedPassword = await bcrypt.hash(
+    input.password,
+    await bcrypt.genSalt(10),
+  );
+  const user = new UserModel(
+    uuidv4(),
+    input.name,
+    input.email,
+    hashedPassword,
+    new Date(),
+  );
+  await pool.query({
+    name: "create-user",
+    text: "INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING *",
+    values: [user.id, user.name, user.email, user.password, false, user.createdAt, "pending",],
+  });
+  return user;
+
+
 }
-    async function getUser() {
-    const pool = db.pool();
-    const queryResult=await pool.query("SELECT * FROM users ");
-    const rows = queryResult.rows;
-    return rows.map(
-        (row) =>
-           new GetUserApiResponseItemDto(
-            row.id,
-            row.name,
-            row.email,
-            row.password,
-            row.created_at,
-           ) 
-    );
+
+async function getUser() {
+  const pool = db.pool();
+  const queryResult = await pool.query("SELECT * FROM users ");
+  const rows = queryResult.rows;
+  return rows.map(
+    (row) =>
+      new GetUserApiResponseItemDto(
+        row.id,
+        row.name,
+        row.email,
+        row.password,
+        row.created_at,
+      )
+  );
 }
+
 async function login(input) {
   const pool = db.pool();
 
@@ -96,7 +98,7 @@ async function getMe(userId) {
   return queryResult.rows[0];
 }
 
-async function deleteUser(userId){
+async function deleteUser(userId) {
   const pool = db.pool();
   const queryResult = await pool.query({
     name: "soft-delete-user",
@@ -109,16 +111,17 @@ async function deleteUser(userId){
   return queryResult.rows[0];
 }
 
-async function updateUser(userId,input){
+async function updateUser(userId, input) {
   const pool = db.pool();
   const queryResult = await pool.query({
     name: "update-user-name-by-id",
     text: "UPDATE users SET name = $1 WHERE id = $2 RETURNING *",
-    values: [input.name,userId],
+    values: [input.name, userId],
   });
   if (queryResult.rows.length === 0) {
     throw new ApiError("User not found", 404);
   }
   return queryResult.rows[0];
 }
-module.exports = { register,getUser,login ,getMe,deleteUser,updateUser};
+
+module.exports = { register, getUser, login, getMe, deleteUser, updateUser };

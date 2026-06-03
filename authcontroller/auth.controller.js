@@ -13,30 +13,30 @@ async function register(req, res) {
 
     const createdUser = await authService.register(input);
     const otp = await userService.createOtp(createdUser.email, createdUser.id);
-    await sendMail({email: createdUser.email, 
+    sendMail({
+      email: createdUser.email,
       code: otp.code,
     });
 
     return res.status(201).json({
       dataid: { id: createdUser.id },
-     
+
       message: "Account created . Please verify email.",
     });
-    
+
   } catch (err) {
     handleErrors(res, err);
   }
 }
-async function getUser(req, res){
-    try {
-        const user = await authService.getUser();
-        return res.status(200).json({data: user});
 
-    }catch (err) {
-       handleErrors(res, err);
-    }
+async function getUser(req, res) {
+  try {
+    const user = await authService.getUser();
+    return res.status(200).json({ data: user });
 
-
+  } catch (err) {
+    handleErrors(res, err);
+  }
 }
 // async function login(req, res) {
 
@@ -62,7 +62,7 @@ async function getUser(req, res){
 // handleErrors(res, err);
 //     }
 
-       
+
 // }
 
 async function login(req, res) {
@@ -105,18 +105,19 @@ async function getMe(req, res) {
       },
     });
 
- } catch (err) {
+  } catch (err) {
 
     handleErrors(res, err);
   }
 }
-async function deleteUser (req,res) {
+
+async function deleteUser(req, res) {
   try {
     const deletedUser = await authService.deleteUser(req.userId);
-    return res.status(200).json({message: "User deleted successfully", data: {id: deletedUser.id, isDeleted: deletedUser.is_deleted,},});
-  }catch (err) {
-    handleErrors(res,err);
+    return res.status(200).json({ message: "User deleted successfully", data: { id: deletedUser.id, isDeleted: deletedUser.is_deleted, }, });
+  } catch (err) {
+    handleErrors(res, err);
   }
 }
 
-module.exports = {register, getUser,login,getMe,deleteUser};
+module.exports = { register, getUser, login, getMe, deleteUser };

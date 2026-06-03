@@ -1,9 +1,9 @@
-const { Pool} = require("pg");
-let db=null;
+const { Pool } = require("pg");
+let db = null;
 
 class DB {
     #pool;
-    static create () {
+    static create() {
         if (!!db) {
             return db;
         }
@@ -13,7 +13,7 @@ class DB {
     pool() {
         return this.#pool;
     }
-    connect (config){
+    connect(config) {
         const pool = new Pool({
             host: config.host,
             user: config.user,
@@ -21,10 +21,11 @@ class DB {
             database: config.database,
             port: config.port,
             onConnect: async () => {
-                console.log("Database connection established",  new Date(). toString());
+                console.log("Database connection established", new Date().toString());
             },
         });
         this.#pool = pool;
     }
 }
+
 module.exports = { DB };

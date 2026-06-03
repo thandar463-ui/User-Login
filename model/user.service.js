@@ -4,17 +4,19 @@ const { v4: uuidv4 } = require("uuid");
 const ApiError = require("../authcontroller/api-error");
 const { raw } = require("express");
 const db = DB.create();
+
 async function createOtp(email, user_id) {
-const pool = db.pool();
-const otp = new OtpModel(uuidv4(), uuidv4(), email, user_id, new Date());
-await pool.query({
-    name: "create-otp",
-    text: "INSERT INTO otps VALUES ($1, $2, $3, $4, $5) RETURNING *",
-    values: [otp.id, otp.code, otp.email, otp.user_id, otp.createdAt],
-});
-return otp;
+    const pool = db.pool();
+    const otp = new OtpModel(uuidv4(), uuidv4(), email, user_id, new Date());
+    await pool.query({
+        name: "create-otp",
+        text: "INSERT INTO otps VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        values: [otp.id, otp.code, otp.email, otp.user_id, otp.createdAt],
+    });
+    return otp;
 }
-async function  findOtp(code) {
+
+async function findOtp(code) {
     const pool = db.pool();
     console.log(code);
     const findOtpResult = await pool.query({
@@ -34,19 +36,20 @@ async function  findOtp(code) {
         rawOtp.createdAt,
     );
     return otp;
-    
+
 }
 
-async function activateUser(email){
+async function activateUser(id) {
     const pool = db.pool();
     await pool.query({
-       name: "activate-user",
-        text: "UPDATE users SET status = 'active' WHERE email = $1",
-        values: [email],  
+        name: "activate-user",
+        text: "UPDATE users SET status = 'active' WHERE id = $1 AND status = 'pending'",
+        values: [id],
     })
 
 }
-async function updateEmail(user_id, email){
+
+async function updateEmail(user_id, email) {
     const pool = db.pool();
     await pool.query({
         name: "update-email",
@@ -56,7 +59,7 @@ async function updateEmail(user_id, email){
     return;
 }
 
-async function deleteOtp(id){
+async function deleteOtp(id) {
     const pool = db.pool();
     await pool.query({
         name: "delete-otp",
@@ -65,4 +68,5 @@ async function deleteOtp(id){
     });
     return;
 }
-module.exports = { createOtp, findOtp,activateUser, updateEmail, deleteOtp, };
+
+module.exports = { createOtp, findOtp, activateUser, updateEmail, deleteOtp, };
