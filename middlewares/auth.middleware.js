@@ -11,15 +11,18 @@ async function authMiddleware(req, res, next) {
     const authorizationHeader = req.headers?.authorization;
     if (!authorizationHeader) {
       throw new ApiError("Authorization header must be provided", 401);
-      
+
     }
+
     const splittedAuthHeader = authorizationHeader.split(" ");
     if (splittedAuthHeader.length !== 2) {
       throw new ApiError("Invalid authorization header", 401);
     }
+
     if (splittedAuthHeader[0] !== "JWT") {
       throw new ApiError("Invalid authorization header", 401);
     }
+
     const jwtToken = splittedAuthHeader[1];
 
     const payload = verifyJWT(jwtToken);
@@ -32,6 +35,7 @@ async function authMiddleware(req, res, next) {
       text: "SELECT * FROM users WHERE id = $1",
       values: [payload.id],
     });
+
     if (findUserByIdResult.rows.length === 0) {
       throw new ApiError("Invalid jwt token", 401);
     }
