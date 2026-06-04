@@ -12,7 +12,8 @@ async function seedSuperAdmin() {
         `
         SELECT id
         FROM admins
-        WHERE role = 'SUPER_ADMIN'`
+        WHERE role = 'SUPER_ADMIN'
+        `
     );
 
     if (exists.rowCount > 0) {
@@ -83,7 +84,8 @@ async function inviteAdmin(input) {
         `
         SELECT id
         FROM admins
-        WHERE email = $1`
+        WHERE email = $1
+        `
         ,
         [input.email]
     );
@@ -128,7 +130,7 @@ async function inviteAdmin(input) {
             email,
             role,
             status
-            `
+       `
         ,
         [
             uuidv4(),
@@ -150,7 +152,8 @@ async function inviteLogin(input) {
             `
             SELECT *
             FROM admins
-        WHERE email = $1`
+            WHERE email = $1
+           `
             ,
             [input.email]
         );
@@ -224,7 +227,8 @@ async function changePassword(input) {
             `
             SELECT *
             FROM admins
-        WHERE email = $1`
+            WHERE email = $1
+           `
             ,
             [input.email]
         );
