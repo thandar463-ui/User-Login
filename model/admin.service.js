@@ -40,7 +40,7 @@ async function seedSuperAdmin() {
             'SUPER_ADMIN',
             'ACTIVE'
         )
-         `
+            `
         ,
         [
             uuidv4(),
@@ -86,9 +86,9 @@ async function superadminLogin(input) {
             UPDATE admins
             SET
                 status = 'ACTIVE',
-                updated_at = NOW()
+        updated_at = NOW()
             WHERE id = $1
-            `
+        `
             ,
             [foundAdmin.id]
         );
@@ -142,7 +142,7 @@ async function inviteAdmin(input) {
 
     const result = await pool.query(
         `
-        INSERT INTO admins (
+        INSERT INTO admins(
             id,
             name,
             email,
@@ -152,19 +152,19 @@ async function inviteAdmin(input) {
             created_at,
             updated_at
         )
-        VALUES (
-            $1,$2,$3,$4,$5,
+        VALUES(
+            $1, $2, $3, $4, $5,
             'INVITED',
             NOW(),
             NOW()
         )
         RETURNING
             id,
-            name,
-            email,
-            role,
-            status
-        `
+        name,
+        email,
+        role,
+        status
+            `
         ,
         [
             uuidv4(),
@@ -178,6 +178,80 @@ async function inviteAdmin(input) {
     return result.rows[0];
 }
 
+async function inviteLogin(input) {
+    const pool = db.pool();
+
+    const result =
+        await pool.query(
+            `
+            SELECT *
+        FROM admins
+        WHERE email = $1`
+            ,
+            [input.email]
+        );
+
+    if (result.rowCount === 0) {
+        throw new ApiError(
+            "Invalid credentials",
+            401
+        );
+    }
+
+    const admin =
+        result.rows[0];
+
+    const match =
+        await bcrypt.compare(
+            input.password,
+            admin.password
+        );
+
+    if (!match) {
+        throw new ApiError(
+            "Invalid credentials",
+            401
+        );
+    }
+
+    if (
+        admin.status ===
+        "INVITED"
+    ) {
+        await pool.query(
+            `
+            UPDATE admins
+            SET
+                status = 'ACTIVE',
+        updated_at = NOW()
+            WHERE id = $1
+        `
+            ,
+            [admin.id]
+        );
+
+        admin.status =
+            "ACTIVE";
+    }
+
+    const token = signJWT({
+        id: admin.id,
+        role: admin.role,
+    });
+
+    return {
+        accessToken: token,
+        admin: {
+            id: admin.id,
+            name: admin.name,
+            email: admin.email,
+            role: admin.role,
+            status:
+                admin.status,
+        },
+    };
+}
+
 async function changePassword(input) {
     const pool = db.pool();
 
@@ -185,9 +259,9 @@ async function changePassword(input) {
         await pool.query(
             `
             SELECT *
-            FROM admins
+        FROM admins
         WHERE email = $1
-           `
+        `
             ,
             [input.email]
         );
@@ -226,7 +300,7 @@ async function changePassword(input) {
         UPDATE admins
         SET
             password = $1,
-            updated_at = NOW()
+        updated_at = NOW()
         WHERE id = $2
         `
         ,
