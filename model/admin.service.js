@@ -52,7 +52,7 @@ async function seedSuperAdmin() {
     console.log("Super Admin Created");
 }
 
-async function superadminLogin(input) {
+async function Login(input) {
     const pool = db.pool();
 
     const findByEmailResult = await pool.query({
@@ -64,12 +64,12 @@ async function superadminLogin(input) {
         throw new ApiError("Super admin not found", 400);
     }
     const foundAdmin = findByEmailResult.rows[0];
+
     if (foundAdmin.role === "SUPER_ADMIN") {
         if (foundAdmin.status !== "ACTIVE") {
             throw new ApiError("Super admin is not active", 400);
         }
     }
-
     const isSame = await bcrypt.compare(input.password, foundAdmin.password);
     if (!isSame) {
         throw new ApiError("Password not match", 400);
@@ -111,7 +111,7 @@ async function superadminLogin(input) {
     };
 }
 
-async function inviteAdmin(input) {
+async function invite(input) {
     const pool = db.pool();
 
     const existingAdmin = await pool.query(
@@ -178,79 +178,6 @@ async function inviteAdmin(input) {
     return result.rows[0];
 }
 
-async function inviteLogin(input) {
-    const pool = db.pool();
-
-    const result =
-        await pool.query(
-            `
-            SELECT *
-        FROM admins
-        WHERE email = $1`
-            ,
-            [input.email]
-        );
-
-    if (result.rowCount === 0) {
-        throw new ApiError(
-            "Invalid credentials",
-            401
-        );
-    }
-
-    const admin =
-        result.rows[0];
-
-    const match =
-        await bcrypt.compare(
-            input.password,
-            admin.password
-        );
-
-    if (!match) {
-        throw new ApiError(
-            "Invalid credentials",
-            401
-        );
-    }
-
-    if (
-        admin.status ===
-        "INVITED"
-    ) {
-        await pool.query(
-            `
-            UPDATE admins
-            SET
-                status = 'ACTIVE',
-        updated_at = NOW()
-            WHERE id = $1
-        `
-            ,
-            [admin.id]
-        );
-
-        admin.status =
-            "ACTIVE";
-    }
-
-    const token = signJWT({
-        id: admin.id,
-        role: admin.role,
-    });
-
-    return {
-        accessToken: token,
-        admin: {
-            id: admin.id,
-            name: admin.name,
-            email: admin.email,
-            role: admin.role,
-            status:
-                admin.status,
-        },
-    };
-}
 
 async function changePassword(input) {
     const pool = db.pool();
@@ -318,8 +245,8 @@ async function changePassword(input) {
 
 module.exports = {
     seedSuperAdmin,
-    superadminLogin,
-    inviteAdmin,
+    Login,
+    invite,
     changePassword,
 
 };
