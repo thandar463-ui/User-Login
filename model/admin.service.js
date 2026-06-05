@@ -65,11 +65,7 @@ async function Login(input) {
     }
     const foundAdmin = findByEmailResult.rows[0];
 
-    if (foundAdmin.role === "SUPER_ADMIN") {
-        if (foundAdmin.status !== "ACTIVE") {
-            throw new ApiError("Super admin is not active", 400);
-        }
-    }
+
     const isSame = await bcrypt.compare(input.password, foundAdmin.password);
     if (!isSame) {
         throw new ApiError("Password not match", 400);
