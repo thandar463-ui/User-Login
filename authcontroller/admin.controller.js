@@ -1,5 +1,4 @@
 const SuperAdminLoginDto = require("../dtos/superadmin-login.dto");
-const InviteLoginDto = require("../dtos/invite-login.dto");
 const InviteAdminDto = require("../dtos/invite-admin.dto");
 const ChangePasswordDto = require("../dtos/change-password.dto");
 const authService = require("../model/auth.service");
@@ -44,21 +43,6 @@ async function inviteAdmin(req, res) {
     }
 }
 
-async function inviteLogin(req, res) {
-    try {
-        const body = req.body;
-
-        const input = InviteLoginDto.parse(body);
-
-        const token = await adminService.inviteLogin(input);
-
-        return res.json({ data: token, message: "Logined successfully!" });
-    } catch (err) {
-        handleErrors(res, err);
-    }
-}
-
-
 
 async function changePassword(req, res) {
     try {
@@ -83,4 +67,25 @@ async function changePassword(req, res) {
     }
 }
 
-module.exports = { superadminLogin, inviteAdmin, inviteLogin, changePassword };
+async function deleteUserController(req, res) {
+    try {
+        const admin = req.admin; // from auth middleware
+        const userId = req.params.userId;
+
+
+        const result = await userService.deleteUserByAdmin(
+            { userId },
+            admin
+        );
+
+        return res.json({
+            data: result,
+            message:
+                "User deleted successfully"
+        });
+    } catch (err) {
+        handleErrors(res, err);
+    }
+}
+
+module.exports = { superadminLogin, inviteAdmin, changePassword, deleteUserController };

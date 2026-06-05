@@ -49,8 +49,8 @@ app.post("/verify-email", userController.verifyEmail);
 
 app.post("/superadminlogin", adminController.superadminLogin);
 app.post("/admin", adminController.inviteAdmin);
-app.post("/invitelogin", adminController.inviteLogin);
 app.post("/change-password", adminController.changePassword);
+app.delete("/user/:userId", adminMiddleware, adminController.deleteUserController);
 
 app.use("/auth", authRoute);
 

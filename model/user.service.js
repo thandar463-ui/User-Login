@@ -69,4 +69,49 @@ async function deleteOtp(id) {
     return;
 }
 
-module.exports = { createOtp, findOtp, activateUser, updateEmail, deleteOtp, };
+async function deleteUserByAdmin(input, currentAdmin) {
+    const pool = db.pool();
+    if (currentAdmin.role !== "SUPER_ADMIN" && currentAdmin.role !== "ADMIN") {
+        throw new ApiError("Permission denied", 400);
+    }
+    const userResult = await pool.query(
+        `
+        SELECT id, deleted
+        FROM users
+        WHERE id = $1
+        `,
+        [input.userId]
+    );
+
+    if (userResult.rowCount === 0) {
+        throw new ApiError("User not found", 404);
+    }
+
+    const user = userResult.rows[0];
+    if (user.deleted === true) {
+        throw new ApiError("User is already deleted", 400);
+    }
+
+
+    const result = await pool.query(
+        `
+        UPDATE users
+        SET deleted = true
+        WHERE id = $1
+        RETURNING id, name, email, deleted, status
+        `,
+        [input.userId]
+    );
+
+    return {
+        message: "User deleted successfully",
+        user: result.rows[0],
+    };
+}
+
+
+
+module.exports = {
+    createOtp, findOtp, activateUser, updateEmail, deleteOtp,
+    deleteUserByAdmin,
+};

@@ -12,7 +12,8 @@ async function seedSuperAdmin() {
         `
         SELECT id
         FROM admins
-        WHERE role = 'SUPER_ADMIN'`
+        WHERE role = 'SUPER_ADMIN'
+        `
     );
 
     if (exists.rowCount > 0) {
@@ -63,17 +64,51 @@ async function superadminLogin(input) {
         throw new ApiError("Super admin not found", 400);
     }
     const foundAdmin = findByEmailResult.rows[0];
-    if (foundAdmin.status !== "ACTIVE") {
-        throw new ApiError("Your not Super admin .", 400);
+    if (foundAdmin.role === "SUPER_ADMIN") {
+        if (foundAdmin.status !== "ACTIVE") {
+            throw new ApiError("Super admin is not active", 400);
+        }
     }
 
     const isSame = await bcrypt.compare(input.password, foundAdmin.password);
     if (!isSame) {
         throw new ApiError("Password not match", 400);
     }
+    if (foundAdmin.status === "DELETED") {
+        throw new ApiError("Account has been deleted", 400);
+    }
+    if (
+        foundAdmin.status ===
+        "INVITED"
+    ) {
+        await pool.query(
+            `
+            UPDATE admins
+            SET
+                status = 'ACTIVE',
+                updated_at = NOW()
+            WHERE id = $1
+            `
+            ,
+            [foundAdmin.id]
+        );
 
-    const token = signJWT({ id: foundAdmin.id });
-    return token;
+        foundAdmin.status =
+            "ACTIVE";
+    }
+
+
+    const token = signJWT({ id: foundAdmin.id, role: foundAdmin.role, });
+    return {
+        accessToken: token,
+        data: {
+            id: foundAdmin.id,
+            name: foundAdmin.name,
+            email: foundAdmin.email,
+            role: foundAdmin.role,
+            status: foundAdmin.status,
+        },
+    };
 }
 
 async function inviteAdmin(input) {
@@ -83,7 +118,8 @@ async function inviteAdmin(input) {
         `
         SELECT id
         FROM admins
-        WHERE email = $1`
+        WHERE email = $1
+        `
         ,
         [input.email]
     );
@@ -128,7 +164,7 @@ async function inviteAdmin(input) {
             email,
             role,
             status
-            `
+        `
         ,
         [
             uuidv4(),
@@ -142,80 +178,6 @@ async function inviteAdmin(input) {
     return result.rows[0];
 }
 
-async function inviteLogin(input) {
-    const pool = db.pool();
-
-    const result =
-        await pool.query(
-            `
-            SELECT *
-            FROM admins
-        WHERE email = $1`
-            ,
-            [input.email]
-        );
-
-    if (result.rowCount === 0) {
-        throw new ApiError(
-            "Invalid credentials",
-            401
-        );
-    }
-
-    const admin =
-        result.rows[0];
-
-    const match =
-        await bcrypt.compare(
-            input.password,
-            admin.password
-        );
-
-    if (!match) {
-        throw new ApiError(
-            "Invalid credentials",
-            401
-        );
-    }
-
-    if (
-        admin.status ===
-        "INVITED"
-    ) {
-        await pool.query(
-            `
-            UPDATE admins
-            SET
-                status = 'ACTIVE',
-                updated_at = NOW()
-            WHERE id = $1
-            `
-            ,
-            [admin.id]
-        );
-
-        admin.status =
-            "ACTIVE";
-    }
-
-    const token = signJWT({
-        id: admin.id,
-        role: admin.role,
-    });
-
-    return {
-        accessToken: token,
-        admin: {
-            id: admin.id,
-            name: admin.name,
-            email: admin.email,
-            role: admin.role,
-            status:
-                admin.status,
-        },
-    };
-}
-
 async function changePassword(input) {
     const pool = db.pool();
 
@@ -224,7 +186,8 @@ async function changePassword(input) {
             `
             SELECT *
             FROM admins
-        WHERE email = $1`
+        WHERE email = $1
+           `
             ,
             [input.email]
         );
@@ -278,10 +241,11 @@ async function changePassword(input) {
     };
 }
 
+
 module.exports = {
     seedSuperAdmin,
     superadminLogin,
     inviteAdmin,
-    inviteLogin,
-    changePassword
+    changePassword,
+
 };
