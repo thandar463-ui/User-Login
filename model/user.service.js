@@ -71,9 +71,7 @@ async function deleteOtp(id) {
 
 async function deleteUserByAdmin(input, currentAdmin) {
     const pool = db.pool();
-    if (currentAdmin.role !== "SUPER_ADMIN" && currentAdmin.role !== "ADMIN") {
-        throw new ApiError("Permission denied", 400);
-    }
+
     const userResult = await pool.query(
         `
         SELECT id, deleted

@@ -7,6 +7,7 @@ const adminController = require("./authcontroller/admin.controller");
 const { router: authRoute } = require("./authcontroller/auth.route");
 const { authMiddleware } = require("./middlewares/auth.middleware");
 const { adminMiddleware } = require("./middlewares/adminjwt.middleware");
+const { permissionMiddleware } = require("./middlewares/permission.middleware");
 const adminService = require("./model/admin.service");
 
 
@@ -50,7 +51,7 @@ app.post("/verify-email", userController.verifyEmail);
 app.post("/superadminlogin", adminController.superadminLogin);
 app.post("/admin", adminController.inviteAdmin);
 app.post("/change-password", adminController.changePassword);
-app.delete("/user/:userId", adminMiddleware, adminController.deleteUserController);
+app.delete("/user/:userId", permissionMiddleware, adminController.deleteUserController);
 
 app.use("/auth", authRoute);
 
