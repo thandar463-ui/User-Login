@@ -238,11 +238,50 @@ async function changePassword(input) {
     };
 }
 
+async function deleteUserByAdmin(input, currentAdmin) {
+    const pool = db.pool();
+
+    const userResult = await pool.query(
+        `
+        SELECT id, deleted
+        FROM users
+        WHERE id = $1
+        `,
+        [input.userId]
+    );
+
+    if (userResult.rowCount === 0) {
+        throw new ApiError("User not found", 404);
+    }
+
+    const user = userResult.rows[0];
+    if (user.deleted === true) {
+        throw new ApiError("User is already deleted", 400);
+    }
+
+
+    const result = await pool.query(
+        `
+        UPDATE users
+        SET deleted = true
+        WHERE id = $1
+        RETURNING id, name, email, deleted, status
+        `,
+        [input.userId]
+    );
+
+    return {
+        message: "User deleted successfully",
+        user: result.rows[0],
+    };
+}
+
 
 module.exports = {
     seedSuperAdmin,
     Login,
     invite,
     changePassword,
+    deleteUserByAdmin,
 
 };

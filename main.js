@@ -1,6 +1,8 @@
 const express = require("express");
 const fs = require("fs");
 const { router: authRoute } = require("./authcontroller/auth.route");
+const { router: adminRoute } = require("./authcontroller/admin.route");
+const { router: todoRoute } = require("./authcontroller/todo.route");
 const adminService = require("./model/admin.service");
 const { DB } = require("./model/database");
 const app = express();
@@ -31,8 +33,8 @@ app.listen(PORT, () => {
 });
 
 app.use("/auth", authRoute);
-app.use("/admin", authRoute);
-app.use("/user", authRoute);
+app.use("/admin", adminRoute);
+app.use("/todos", todoRoute);
 
 
 async function start() {
