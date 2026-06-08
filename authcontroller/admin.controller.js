@@ -88,4 +88,16 @@ async function deleteUserController(req, res) {
     }
 }
 
-module.exports = { Login, invite, changePassword, deleteUserController };
+async function viewUserList(req, res) {
+    try {
+        const admin = req.admin;
+        const users = await adminService.viewUserList(admin);
+
+        return res.json({ data: users, message: "Users fetched successfully" });
+    } catch (err) {
+        handleErrors(res, err);
+    }
+}
+
+
+module.exports = { Login, invite, changePassword, deleteUserController, viewUserList };

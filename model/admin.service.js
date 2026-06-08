@@ -276,6 +276,23 @@ async function deleteUserByAdmin(input, currentAdmin) {
     };
 }
 
+async function viewUserList(currentAdmin) {
+    const pool = db.pool();
+    if (!currentAdmin) {
+        throw new ApiError("Unauothrized user", 401)
+    }
+    const userResult = await pool.query({
+        name: "view-user",
+        text: "SELECT id,name,email,status,created_at FROM users WHERE status = $1 AND deleted  = $2 ORDER BY created_at DESC",
+        values: ['active', false],
+    });
+
+    return userResult.rows;
+
+
+}
+
+
 
 module.exports = {
     seedSuperAdmin,
@@ -283,5 +300,5 @@ module.exports = {
     invite,
     changePassword,
     deleteUserByAdmin,
-
+    viewUserList,
 };

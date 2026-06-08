@@ -8,6 +8,6 @@ router.post("/invitelogin", adminController.Login);
 router.post("/invite", adminController.invite);
 router.post("/change-password", adminController.changePassword);
 router.delete("/user/:userId", adminMiddleware, permissionMiddleware, adminController.deleteUserController);
-
+router.get("/users", adminMiddleware, permissionMiddleware, adminController.viewUserList);
 
 module.exports = { router };
