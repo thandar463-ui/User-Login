@@ -3,11 +3,11 @@ const router = express.Router();
 const adminController = require("./admin.controller");
 const { adminMiddleware, } = require("../middlewares/adminjwt.middleware");
 const { permissionMiddleware, } = require("../middlewares/permission.middleware");
-
-router.post("/invitelogin", adminController.Login);
+const role = require("../model/role.model")
+router.post("/login", adminController.Login);
 router.post("/invite", adminController.invite);
 router.post("/change-password", adminController.changePassword);
-router.delete("/user/:userId", adminMiddleware, permissionMiddleware, adminController.deleteUserController);
-router.get("/users", adminMiddleware, permissionMiddleware, adminController.viewUserList);
+router.delete("/user/:userId", adminMiddleware, permissionMiddleware([role.SUPER_ADMIN, role.ADMIN]), adminController.deleteUserController);
+router.get("/users", adminMiddleware, adminController.getUserList);
 
 module.exports = { router };

@@ -276,15 +276,16 @@ async function deleteUserByAdmin(input, currentAdmin) {
     };
 }
 
-async function viewUserList(currentAdmin) {
+async function getUserList(currentAdmin, page, size) {
     const pool = db.pool();
     if (!currentAdmin) {
         throw new ApiError("Unauothrized user", 401)
     }
+    const offset = (page - 1) * size;
     const userResult = await pool.query({
         name: "view-user",
-        text: "SELECT id,name,email,status,created_at FROM users WHERE status = $1 AND deleted  = $2 ORDER BY created_at DESC",
-        values: ['active', false],
+        text: "SELECT id,name,email,status,created_at FROM users WHERE status = $1 AND deleted  = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4",
+        values: ['active', false, size, offset],
     });
 
     return userResult.rows;
@@ -300,5 +301,5 @@ module.exports = {
     invite,
     changePassword,
     deleteUserByAdmin,
-    viewUserList,
+    getUserList,
 };
