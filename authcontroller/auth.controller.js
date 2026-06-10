@@ -1,5 +1,6 @@
 const RegisterDto = require("../dtos/register-api.dto");
 const LoginDto = require("../dtos/login.dto");
+const RefreshTokenDto = require("../dtos/refresh-token.dto");
 const authService = require("../model/auth.service");
 const userService = require("../model/user.service");
 const { handleErrors } = require("./handle-errors");
@@ -119,5 +120,18 @@ async function deleteUser(req, res) {
     handleErrors(res, err);
   }
 }
+async function getRefreshToken(req, res) {
+  try {
+    const { refreshToken } = req.body;
+    const data = await authService.getRefreshToken(refreshToken);
 
-module.exports = { register, getUser, login, getMe, deleteUser };
+    return res.status(200).json({
+      data,
+      message: "Access token generated successfully",
+    });
+  } catch (err) {
+    handleErrors(res, err);
+  }
+}
+
+module.exports = { register, getUser, login, getMe, deleteUser, getRefreshToken };

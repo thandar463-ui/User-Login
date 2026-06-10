@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 const { GetUserApiResponseItemDto } = require("../dtos/get-user-api.dto");
 const ApiError = require("../authcontroller/api-error");
-const { signJWT } = require("./jwt");
+const { signAccessToken, signRefreshToken, verifyRefreshToken, } = require("./jwt");
 const db = DB.create();
 
 async function register(input) {
@@ -75,8 +75,17 @@ async function login(input) {
     throw new ApiError("Password not match", 400);
   }
 
-  const token = signJWT({ id: foundUser.id });
-  return token;
+  const accessToken = signAccessToken({ id: foundUser.id, email: foundUser.email }, "15m");
+  const refreshToken = signRefreshToken({ id: foundUser.id, email: foundUser.email }, "7d");
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: foundUser.id,
+      name: foundUser.name,
+      email: foundUser.email,
+    }
+  };
 }
 
 async function getMe(userId) {
@@ -124,4 +133,20 @@ async function updateUser(userId, input) {
   return queryResult.rows[0];
 }
 
-module.exports = { register, getUser, login, getMe, deleteUser, updateUser };
+async function getRefreshToken(refreshToken) {
+  if (!refreshToken) {
+    throw new ApiError("Refresh token is required", 400);
+  }
+
+  try {
+    const user = verifyRefreshToken(refreshToken);
+    const accessToken = signAccessToken({
+      id: user.id,
+    }, "15m");
+    return { accessToken };
+  } catch (err) {
+    throw new ApiError("Invalid refresh token", 401);
+  }
+}
+
+module.exports = { register, getUser, login, getMe, deleteUser, updateUser, getRefreshToken };
