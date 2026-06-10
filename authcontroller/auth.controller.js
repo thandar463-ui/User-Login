@@ -86,12 +86,12 @@ async function getMe(req, res) {
 
     console.log(
       "Retrieved userId from middleware:",
-      req.userId
+      req.user.id
     );
 
     const user =
       await authService.getMe(
-        req.userId
+        req.user.id
       );
 
     return res.status(200).json({
@@ -120,10 +120,10 @@ async function deleteUser(req, res) {
     handleErrors(res, err);
   }
 }
-async function getRefreshToken(req, res) {
+async function refreshAccessToken(req, res) {
   try {
     const { refreshToken } = req.body;
-    const data = await authService.getRefreshToken(refreshToken);
+    const data = await authService.refreshAccessToken(refreshToken);
 
     return res.status(200).json({
       data,
@@ -134,4 +134,4 @@ async function getRefreshToken(req, res) {
   }
 }
 
-module.exports = { register, getUser, login, getMe, deleteUser, getRefreshToken };
+module.exports = { register, getUser, login, getMe, deleteUser, refreshAccessToken, };

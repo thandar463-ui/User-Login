@@ -24,9 +24,9 @@ function signRefreshToken(payload, expiresIn) {
   });
 }
 
-// function verifyAccessToken(token) {
-//   return jwt.verify(token, getAccessTokenSecret());
-// }
+function verifyAccessToken(token) {
+  return jwt.verify(token, getAccessTokenSecret());
+}
 
 function verifyRefreshToken(token) {
   return jwt.verify(token, getRefreshTokenSecret());
@@ -35,6 +35,7 @@ function verifyRefreshToken(token) {
 module.exports = {
   signAccessToken,
   signRefreshToken,
+  verifyAccessToken,
   verifyRefreshToken,
 }
 

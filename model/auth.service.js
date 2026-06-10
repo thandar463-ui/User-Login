@@ -89,7 +89,7 @@ async function login(input) {
 }
 
 async function getMe(userId) {
-
+  console.log(userId);
   const pool = db.pool();
 
   const queryResult =
@@ -133,7 +133,7 @@ async function updateUser(userId, input) {
   return queryResult.rows[0];
 }
 
-async function getRefreshToken(refreshToken) {
+async function refreshAccessToken(refreshToken) {
   if (!refreshToken) {
     throw new ApiError("Refresh token is required", 400);
   }
@@ -149,4 +149,4 @@ async function getRefreshToken(refreshToken) {
   }
 }
 
-module.exports = { register, getUser, login, getMe, deleteUser, updateUser, getRefreshToken };
+module.exports = { register, getUser, login, getMe, deleteUser, updateUser, refreshAccessToken };
